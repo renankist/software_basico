@@ -1,0 +1,36 @@
+#include <stdio.h>
+
+int main(void){
+	
+	int a3, a7, mais8, nenhum; 	
+	int contador = 1;
+	
+	while(contador <= 8){
+	   int e; 
+        		
+	   printf("Quantos filhos você tem? ");
+           scanf("%d", &e);
+	
+	   if(e >= 1 && e <= 3){
+	      a3++;
+           }else if(e >= 4 && e <= 7){
+              a7++;
+           }else if(e >= 8){
+              mais8++;
+           }else{
+              nenhum++; 			
+           }
+
+
+	   contador++;
+		
+	}
+
+	printf("1 a 3 filhos: %d \n","3 a 7 filhos: %d \n", "mais de 8 filhos: %d \n", "nenhum filho: %d \n",a3,a7,mais8, nenhum); 
+	
+	return 0;
+
+}
+
+
+
