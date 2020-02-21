@@ -16,8 +16,7 @@ int main(void){
 	
 	   if(e >= 1 && e <= 3){
 	      a++;
-              printf("1 a 3 filhos: %d \n",a); 
-	
+           
            }else if(e >= 4 && e <= 7){
               b++;
            }else if(e >= 8){
@@ -32,7 +31,7 @@ int main(void){
 	}
 
 	printf("1 a 3 filhos: %d \n 3 a 7 filhos: %d \n mais de 8 filhos: %d \n nenhum filho: %d \n",a,b,c,d); 
-	//printf("1 a 3 filhos: %d \n",a); 
+	
 	
 	return 0;
 
