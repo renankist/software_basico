@@ -30,10 +30,11 @@ double sum(double v[], int size){
 }
 
 int main(void){
-
-	int size = 6; 
+; 
 
 	double v[] = {1.2, 3.4, 5.6, 7.8, 9.0};
+
+	int size = sizeof(v) / sizeof(v[0]);
 
 	double soma = sum(v,size);
 
