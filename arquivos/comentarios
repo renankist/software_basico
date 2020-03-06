@@ -1,0 +1,11 @@
+Existem dois tipos de arquivos: 
+  ASC/Texto -> Arquivos de textos puros.
+  Binários -> Ocultam código fonte e ajudam o  compilador. Os conteúdos dentro de um arquivo binário está distribuido da mesma maneira que estaria na memória do computador.
+
+
+Manipulação de arquivos
+
+Declaração -> FILE *p;
+Abrir -> FILE *fopen
+Fechar -> fclose (FILE *fp) 
+

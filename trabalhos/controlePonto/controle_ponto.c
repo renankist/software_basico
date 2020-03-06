@@ -40,16 +40,13 @@ int  employee_register(int id){
 	printf("--------------------------------------------------------\n"); 
 		
 
-
+		
 
 	return 0; 
-
 }
 
 
 
 int main(void){
-
 	menu();
-
 }
