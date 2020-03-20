@@ -9,13 +9,13 @@ void menu(){
 	printf("-------------------------------------------------\n"); 
 	printf(" [1] Cadastrar um novo funcionário\n"); 
 	printf(" [2] Listar funcionários cadastrados\n");
-    printf(" [3] Exibir relatório de ponto de um funcionário\n");
-    printf(" [4] Exibir relatório de pendências de registro\n");
-    printf(" [5] Gravar registro do ponto\n");
-    printf(" [0] Sair do sistema\n");
+    	printf(" [3] Exibir relatório de ponto de um funcionário\n");
+    	printf(" [4] Exibir relatório de pendências de registro\n");
+    	printf(" [5] Gravar registro do ponto\n");
+    	printf(" [0] Sair do sistema\n");
 
-    printf("Digite a opção desejada: ");
-    scanf("%d", &option);
+   	printf("Digite a opção desejada: ");
+    	scanf("%d", &option);
 
     switch (option)
 	{
@@ -38,13 +38,9 @@ int  employee_register(int id){
 	printf("--------------------------------------------------------\n"); 
 	printf("|Sistema de controle de ponto (Cadastro de funcionário)| \n"); 
 	printf("--------------------------------------------------------\n"); 
-		
-
-		
-
+	
 	return 0; 
 }
-
 
 
 int main(void){
