@@ -12,6 +12,7 @@ imprimir na tela o maior valor fornecido.
 
 void max(int x, int y, int z, int w){ 
     int maior = x; 
+	
 		if(y > maior){
 			maior = y; 
 		}
@@ -21,6 +22,7 @@ void max(int x, int y, int z, int w){
 		if(w > maior){
 			maior  = w; 
 		}
+
 	printf("O maior número é %d\n", maior);	
 }
 
