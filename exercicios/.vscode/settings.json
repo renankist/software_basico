@@ -2,6 +2,8 @@
     "files.associations": {
         "string.h": "c",
         "ctype.h": "c",
-        "stdio.h": "c"
-    }
+        "stdio.h": "c",
+        "forca.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

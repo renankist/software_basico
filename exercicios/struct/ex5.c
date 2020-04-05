@@ -15,8 +15,6 @@ struct Lancamento{
     char tipo;  
 }; 
 
-
-
 void main(){
     double projetos[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
     int controle = 0; 
