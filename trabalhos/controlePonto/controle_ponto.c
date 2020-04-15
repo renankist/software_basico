@@ -1,10 +1,25 @@
-#include "tipos.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef struct Date DATE;
+struct Date{
+	int dia; 
+	int mes; 
+	int ano;
+};
+
+
+typedef struct Employee EMPLOYEE;
+struct Employee{
+	int id; 
+	char cpf[12];
+	char name[20];
+	struct Date date;
+
+};
 void menu()
-{
+{	
 	int option;
 
 	printf("-------------------------------------------------\n");
@@ -27,13 +42,18 @@ void menu()
 		break;
 	case 1:
 		employee_register(1);
+		menu();
+		break;
+	case 2:
+		showEmployees();
+		menu();
 		break;
 	default:
 		printf("cadastrarFunc()");
 	}
 }
 
-int employee_register(int id)
+void employee_register(int id)
 {
 	printf("--------------------------------------------------------\n");
 	printf("|Sistema de controle de ponto (Cadastro de funcionário)| \n");
@@ -49,17 +69,17 @@ int employee_register(int id)
 	fgets(e.cpf, 12, stdin);
 	e.cpf[strlen(e.cpf) - 1] = '\0';
 	printf("Digite o dia de nascimento nascimento do funcionário: ");
-	scanf("%d", &e.data.dia);
+	scanf("%d", &e.date.dia);
 	getchar();
 	printf("Digite o número do mês de nascimento do funcionário: ");
-	scanf("%d", &e.data.mes);
+	scanf("%d", &e.date.mes);
 	getchar();
 	printf("Digite o ano de nascimento do funcionário: ");
-	scanf("%d", &e.data.ano);
+	scanf("%d", &e.date.ano);
 	getchar();
 
 	char resposta;
-	printf("Deseja cadastrar o funcionário? [s/n] ");
+	printf("Deseja cadastrar o funcionário ss? [s/n] ");
 	scanf("%c", &resposta);
 
 	//Inserir funcionário no arquivo funcionarios.csv
@@ -70,7 +90,7 @@ int employee_register(int id)
 
 	FILE *p;
 
-	p = fopen("funcionarios.csv", "a");
+	p = fopen("funcionarios.csv", "ab");
 
 	if (!p)
 	{
@@ -78,12 +98,10 @@ int employee_register(int id)
 		menu();
 	}
 
-	//Concatenar arquivos
-	char resultado[256];
-	fputs("\n", p);
-	fprintf(p, "%d,%s,%s,%d/%d/%d", e.id, e.name, e.cpf,e.data.dia,e.data.mes,e.data.ano);
+	fwrite(&e,sizeof(EMPLOYEE),1,p);
+	//fprintf(p, "%d,%s,%s,%d/%d/%d", e.id, e.name, e.cpf,e.data.dia,e.data.mes,e.data.ano);
 	fclose(p);
-	return 0;
+
 }
 
 struct Employee getEmployee(int id)
@@ -91,3 +109,27 @@ struct Employee getEmployee(int id)
 	struct Employee employee;
 	return employee;
 }
+
+void showEmployees()
+{	
+    printf("-------------------------------------------------------\n");
+	printf("| Sistema de controle de ponto (Lista de funcionários)| \n");
+	printf("-------------------------------------------------------\n");
+	EMPLOYEE e;
+	FILE *p;
+	p = fopen("funcionarios.csv", "rb");
+	if (!p)
+	{
+		printf("Arquivo de banco de dados não encontrato");
+		menu();
+	}
+
+	while(fread(&e,sizeof(EMPLOYEE),1,p) ==1){
+		printf("%d %s %s %d/%d/%d\n", e.id, e.name, e.cpf,e.date.dia,e.date.mes,e.date.ano);
+	}
+
+	fclose(p);
+	
+
+}
+

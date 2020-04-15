@@ -1,7 +1,9 @@
 #define FILE_NAME[] "funcionarios.csv"
 
-int employee_register(int id);
+void employee_register(int id);
 struct Employee getEmployee(int id);
+void showEmployees();
+void header(); 
 void menu(); 
-char[14] cpf_mask(char[11] cpf); 
+
 
