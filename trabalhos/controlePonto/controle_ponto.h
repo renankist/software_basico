@@ -5,5 +5,5 @@ struct Employee getEmployee(int id);
 void showEmployees();
 void header(); 
 void menu(); 
-
+void setIdEmployee(); 
 

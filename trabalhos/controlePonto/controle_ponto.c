@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+int id = 0; //Variavel que guarda o ID de quando se quer inserir um novo employee
+
+
 typedef struct Date DATE;
 struct Date{
 	int dia; 
@@ -41,7 +45,7 @@ void menu()
 		printf("Sistema finalizando..\n ");
 		break;
 	case 1:
-		employee_register(1);
+		employee_register(id);
 		menu();
 		break;
 	case 2:
@@ -99,9 +103,11 @@ void employee_register(int id)
 	}
 
 	fwrite(&e,sizeof(EMPLOYEE),1,p);
+
 	//fprintf(p, "%d,%s,%s,%d/%d/%d", e.id, e.name, e.cpf,e.data.dia,e.data.mes,e.data.ano);
 	fclose(p);
 
+	setIdEmployee();
 }
 
 struct Employee getEmployee(int id)
@@ -127,9 +133,33 @@ void showEmployees()
 	while(fread(&e,sizeof(EMPLOYEE),1,p) ==1){
 		printf("%d %s %s %d/%d/%d\n", e.id, e.name, e.cpf,e.date.dia,e.date.mes,e.date.ano);
 	}
+	fclose(p);
+}
+
+void setIdEmployee(){
+
+	EMPLOYEE e;
+	FILE *p;
+	p = fopen("funcionarios.csv", "rb");
+	if (!p)
+	{
+		printf("Arquivo de banco de dados não encontrato");
+		menu();
+	}
+
+	int max = 0; 
+
+	while(fread(&e,sizeof(EMPLOYEE),1,p) ==1){
+		if(e.id > max){
+			max = e.id;
+		}
+	}
 
 	fclose(p);
-	
+
+	id = max +1; 
+
+	printf("ID %d\n", id);
 
 }
 

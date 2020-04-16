@@ -3,5 +3,6 @@
 
 
 void main(){
+    setIdEmployee();
     menu();
 }
