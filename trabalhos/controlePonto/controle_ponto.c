@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-int id = 0; //Variavel que guarda o ID de quando se quer inserir um novo employee
-
 struct Date
 {
 	int day;
@@ -23,9 +21,9 @@ typedef struct Hour HOUR;
 struct Employee
 {
 	int id;
-	char cpf[12];
+	char cpf[16];
 	char name[20];
-	DATE date;
+	char start_date[20];
 };
 typedef struct Employee EMPLOYEE;
 
@@ -35,7 +33,7 @@ struct Point
 	DATE date;
 	HOUR hour;
 	char type;		 //e (in) s (out)
-	char work_shift; // turno da saída m (manhã) t(tarde) e n(notie)
+	char work_shift; // turno da saída m (manhã) t(tarde)
 };
 typedef struct Point POINT;
 
@@ -67,7 +65,7 @@ void menu()
 			break;
 		case 1:
 			system("clear");
-			employee_register(id);
+			employee_register();
 			menu();
 			break;
 		case 2:
@@ -78,6 +76,11 @@ void menu()
 		case 3:
 			system("clear");
 			employee_point_report();
+			menu();
+			break;
+		case 4:
+			system("clear");
+			pendencies();
 			menu();
 			break;
 		case 5:
@@ -95,7 +98,32 @@ void menu()
 		}
 	} while (option != 0);
 }
+int getIdEmployee()
+{
 
+	EMPLOYEE e;
+	FILE *p;
+	p = fopen("funcionarios.csv", "rb");
+	if (!p)
+	{
+		printf("Arquivo de banco de dados não encontrato");
+		menu();
+	}
+
+	int max = 0;
+
+	while (fread(&e, sizeof(EMPLOYEE), 1, p) == 1)
+	{
+		if (e.id > max)
+		{
+			max = e.id;
+		}
+	}
+
+	fclose(p);
+
+	return max + 1;
+}
 EMPLOYEE getEmployee(int id)
 {
 	EMPLOYEE e;
@@ -117,6 +145,80 @@ EMPLOYEE getEmployee(int id)
 	fclose(p);
 
 	return e;
+}
+
+int hour_is_correct(int hour, int minute, char type, char work_shift)
+{
+
+	//Entrada manhã 7:55 a 8:05
+	if (work_shift == 'm' && type == 'e')
+	{
+		// verifica se a hora está entre 07:55 e 08:05
+		if (hour != 7 && hour != 8)
+		{
+			return -1;
+		}
+		if (hour == 8 && minute > 5)
+		{
+			return -1;
+		}
+		if (hour == 7 && minute < 55)
+		{
+			return -1;
+		}
+	}
+
+	//Saída manhã 11:55 a 12:05
+	if (work_shift == 'm' && type == 's')
+	{
+		// verifica se a hora está entre 11:55 e 12:05
+		if (hour != 11 && hour != 12)
+		{
+			return -1;
+		}
+		if (hour == 12 && minute > 5)
+		{
+			return -1;
+		}
+		if (hour == 11 && minute < 55)
+		{
+			return -1;
+		}
+	}
+
+	//Entrada tarde 13:25 a 13:35
+	if (work_shift == 't' && type == 'e')
+	{
+		// verifica se a hora está entre 13:25 e 13:35
+		if (hour != 13)
+		{
+			return -1;
+		}
+		if (minute > 35 || minute < 25)
+		{
+			return -1;
+		}
+	}
+
+	//Saída tarde 17:55 a 18:05
+	if (work_shift == 't' && type == 's')
+	{
+		// verifica se a hora está entre 17:55 e 18:05
+		if (hour != 17 && hour != 18)
+		{
+			return -1;
+		}
+		if (hour == 18 && minute > 5)
+		{
+			return -1;
+		}
+		if (hour == 17 && minute < 55)
+		{
+			return -1;
+		}
+	}
+
+	return 1;
 }
 
 void employee_point_report()
@@ -156,10 +258,10 @@ void employee_point_report()
 		printf("-------------------------------------------------------\n");
 		printf("| Sistema de controle de ponto (Listagem de ponto)    | \n");
 		printf("-------------------------------------------------------\n");
-		printf("Funcionário: %s \n",p.employee.name);
-		printf("Data de admissão: %d/%d/%d\n", p.employee.date.day, p.employee.date.month,p.employee.date.year);
-	    printf("? Tipo de registro: e = entrada s = saída\n");
-		printf("? Turno do registro: m = manhã t = tarde n = noite\n");
+		printf("Funcionário: %s \n", p.employee.name);
+		printf("Data de admissão: %s\n", p.employee.start_date);
+		printf("? Tipo de registro: e = entrada s = saída\n");
+		printf("? Turno do registro: m = manhã t = tarde\n");
 		printf("----------------------Registros---------------------------\n");
 		FILE *f;
 		f = fopen("ponto.csv", "rb");
@@ -172,11 +274,59 @@ void employee_point_report()
 		printf(" Data       |     Hora      |      Tipo  |      Turno  \n");
 		while (fread(&p, sizeof(POINT), 1, f) == 1)
 		{
-			if(p.employee.id == e.id){
-				printf("%d/%d/%d         %d:%d              %c             %c\n",p.date.day,p.date.month,p.date.year,p.hour.hour, p.hour.minute, p.type,p.work_shift);
+			if (p.employee.id == e.id)
+			{
+				printf("%d/%d/%d         %d:%d              %c             %c\n", p.date.day, p.date.month, p.date.year, p.hour.hour, p.hour.minute, p.type, p.work_shift);
 			}
 		}
 		fclose(f);
+
+		printf("Digite 1 para listar novamente ou 2 para voltar ao menu: ");
+		scanf("%d", &option);
+		system("clear");
+
+	} while ((option == 1));
+}
+
+void pendencies()
+{
+	int option;
+
+	do
+	{
+		system("clear");
+		printf("--------------------------------------------------------\n");
+		printf("|Sistema de controle de ponto (Listagem de pendências)  | \n");
+		printf("--------------------------------------------------------\n");
+		printf("? Tipo de registro: e = entrada s = saída\n");
+		printf("? Turno do registro: m = manhã t = tarde n\n");
+		printf("----------------------Pendências------------------------\n");
+
+		POINT p;
+
+		FILE *f;
+		f = fopen("ponto.csv", "rb");
+
+		if (!f)
+		{
+			printf("Arquivo de banco de dados não encontrato");
+			menu();
+		}
+		int amount = 0;
+		printf(" Data       | Hora  |  Tipo  |  Turno  | Funcionário  \n");
+		while (fread(&p, sizeof(POINT), 1, f) == 1)
+		{
+
+			if (hour_is_correct(p.hour.hour, p.hour.minute, p.type, p.work_shift) == -1)
+			{
+				printf(" %d/%d/%d    %d:%d      %c    	 %c       %s\n", p.date.day, p.date.month, p.date.year, p.hour.hour, p.hour.minute, p.type, p.work_shift, p.employee.name);
+				amount++;
+			}
+		}
+		fclose(f);
+
+		printf("--------------------------------------------------------\n");
+		printf("Quantidade de pendências: %d\n\n", amount);
 
 		printf("Digite 1 para listar novamente ou 2 para voltar ao menu: ");
 		scanf("%d", &option);
@@ -240,7 +390,7 @@ void point_register()
 		printf("Tipo de registo e(entrada) ou s(saída): ");
 		scanf("%c", &p.type);
 		getchar();
-		printf("Turno do registro: m(manhã), t(tarde) ou n(noite): ");
+		printf("Turno do registro: m(manhã), t(tarde): ");
 		scanf("%c", &p.work_shift);
 		getchar();
 		char resposta;
@@ -276,7 +426,7 @@ void point_register()
 	} while ((resp == 1));
 }
 
-void employee_register(int id)
+void employee_register()
 {
 	int resp = 1;
 	do
@@ -284,29 +434,22 @@ void employee_register(int id)
 		printf("--------------------------------------------------------\n");
 		printf("|Sistema de controle de ponto (Cadastro de funcionário)| \n");
 		printf("--------------------------------------------------------\n");
-
 		//Pegar dados do funcionário
 		struct Employee e;
-		e.id = id;
+		e.id = getIdEmployee();
 
 		printf("Digite o nome do funcionário: ");
 		fgets(e.name, 20, stdin);
 		e.name[strlen(e.name) - 1] = '\0';
-		printf("Digite o CPF do funcionário: ");
-		fgets(e.cpf, 12, stdin);
+		printf("Digite o CPF do funcionário (###.###.###-##): ");
+		fgets(e.cpf, 16, stdin);
 		e.cpf[strlen(e.cpf) - 1] = '\0';
-		printf("Digite o dia de nascimento nascimento do funcionário: ");
-		scanf("%d", &e.date.day);
-		getchar();
-		printf("Digite o número do mês de nascimento do funcionário: ");
-		scanf("%d", &e.date.month);
-		getchar();
-		printf("Digite o ano de nascimento do funcionário: ");
-		scanf("%d", &e.date.year);
-		getchar();
+		printf("Digite a data de admissão do funcionário (dd/mm/aaaa): ");
+		e.cpf[strlen(e.start_date) - 1] = '\0';
+		fgets(e.start_date, 20, stdin);
 
 		char resposta;
-		printf("Deseja cadastrar o funcionário? [s/n]");
+		printf("Deseja cadastrar o funcionário? [s/n] ");
 		scanf("%c", &resposta);
 
 		//Inserir funcionário no arquivo funcionarios.csv
@@ -332,12 +475,11 @@ void employee_register(int id)
 
 		fclose(p);
 
-		setIdEmployee();
-
 		printf("Digite 1 para cadastrar outro funcionário ou 2 para voltar ao menu\n");
 		scanf("%d", &resp);
 		system("clear");
-		fgets(e.name, 20, stdin);
+		while (getchar() != '\n')
+			;
 
 	} while ((resp == 1));
 }
@@ -378,8 +520,8 @@ showEmployee()
 
 		if (has_user == 1)
 		{
-			printf("ID | NOME | CPF | DATA DE ADMISSÃO\n");
-			printf("%d %s %s %d/%d/%d\n", e.id, e.name, e.cpf, e.date.day, e.date.month, e.date.year);
+			printf("ID  |       NOME        |     CPF       | DATA DE NASCIMENTO\n");
+			printf("%d    %s       %s  %s\n", e.id, e.name, e.cpf, e.start_date);
 		}
 		else
 		{
@@ -403,10 +545,10 @@ void showEmployees()
 
 	do
 	{
-		printf("-------------------------------------------------------\n");
-		printf("| Sistema de controle de ponto (Lista de funcionários)| \n");
-		printf("-------------------------------------------------------\n");
-		printf("ID | NOME | CPF | DATA DE NASCIMENTO\n");
+		printf("------------------------------------------------------------\n");
+		printf("| Sistema de controle de ponto (Lista de funcionários)     | \n");
+		printf("------------------------------------------------------------\n");
+		printf("ID  |       NOME        |     CPF       | DATA DE NASCIMENTO\n");
 		EMPLOYEE e;
 		FILE *p;
 		p = fopen("funcionarios.csv", "rb");
@@ -416,48 +558,51 @@ void showEmployees()
 			menu();
 		}
 
+		int amount = 0;
 		while (fread(&e, sizeof(EMPLOYEE), 1, p) == 1)
 		{
-			printf("%d %s %s %d/%d/%d\n", e.id, e.name, e.cpf, e.date.day, e.date.month, e.date.year);
+
+			//Verificar tamanho de cada nome dos funcionarios
+			int tmp_name_size = 0;
+			for (int i = 0; e.name[i] != '\0'; i++)
+			{
+				tmp_name_size++;
+			}
+			//Preenche os caracteres após o nome para deixar tudo alinhado
+			for (int x = tmp_name_size + 1; tmp_name_size < 19; tmp_name_size++)
+			{
+				e.name[tmp_name_size] = '-';
+			}
+
+			//Verificar tamanho de cada cpff dos funcionarios
+			int tmp_cpf_size = 0;
+			for (int i = 0; e.cpf[i] != '\0'; i++)
+			{
+				tmp_cpf_size++;
+			}
+			//Preenche os caracteres após o cpf para deixar tudo alinhado
+			for (int x = tmp_cpf_size + 1; tmp_cpf_size < 14; tmp_cpf_size++)
+			{
+				e.cpf[tmp_cpf_size] = '-';
+			}
+
+			printf("%d    %s %s   %s\n", e.id, e.name, e.cpf, e.start_date);
+			amount++;
 		}
+		printf("------------------------------------------------------------\n");
+		printf("Quantidade de registros: %d\n\n", amount);
 		fclose(p);
 
 		printf("Digite 1 para listar novamente ou 2 para voltar ao menu: ");
+
 		scanf("%d", &option);
 		system("clear");
 
 	} while ((option == 1));
 }
 
-void setIdEmployee()
-{
-
-	EMPLOYEE e;
-	FILE *p;
-	p = fopen("funcionarios.csv", "rb");
-	if (!p)
-	{
-		printf("Arquivo de banco de dados não encontrato");
-		menu();
-	}
-
-	int max = 0;
-
-	while (fread(&e, sizeof(EMPLOYEE), 1, p) == 1)
-	{
-		if (e.id > max)
-		{
-			max = e.id;
-		}
-	}
-
-	fclose(p);
-
-	id = max + 1;
-}
-
 void main()
 {
-	setIdEmployee();
+	system("clear");
 	menu();
 }
