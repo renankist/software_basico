@@ -2,7 +2,8 @@
     "files.associations": {
         "controle_ponto.h": "c",
         "string.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "stdio.h": "c"
     },
     "maven.view": "hierarchical"
 }
