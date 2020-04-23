@@ -38,16 +38,16 @@ struct Point
 typedef struct Point POINT;
 
 //FUNCTIONS
-int getIdEmployee();		   // Retorna o ID a ser utilizado em um novo cadastro de funcionário
-int employee_register(int id); // Recebe o ID a ser utilizado no novo usuário e devolve 1 se sucesso
-void employee_list();		   // Lista os funcionários cadastrados
-void employee_report(int id);  // Trás o relatório do registro de pontos de um funcionário, conforme ID
-EMPLOYEE getEmployee(int id);  // Recebe um ID e retorna a struct de funcionnário correspondente
-void employees_report();	   // Mostra o relatório de pendências dos funcionários
-int employee_punch(int id);	   //Função que recebe o ID do usuário a qual sera usado para registrar um pónto e retorna 1 se sucesso
+int getIdEmployee();												   // Retorna o ID a ser utilizado em um novo cadastro de funcionário
+int employee_register(int id);										   // Recebe o ID a ser utilizado no novo usuário e devolve 1 se sucesso
+void employee_list();												   // Lista os funcionários cadastrados
+void employee_report(int id);										   // Trás o relatório do registro de pontos de um funcionário, conforme ID
+EMPLOYEE getEmployee(int id);										   // Recebe um ID e retorna a struct de funcionnário correspondente
+void employees_report();											   // Mostra o relatório de pendências dos funcionários
+int employee_punch(int id);											   //Função que recebe o ID do usuário a qual sera usado para registrar um pónto e retorna 1 se sucesso
 int hour_is_correct(int hour, int minute, char type, char work_shift); // Função que veriica se a hora do ponto está dentro do intervalo "normal" de cada turno e tipo de movimentação
-void menu(); // Função que possui a logica da aplicação
-void showEmployee(); // Solicita um id de funcionário e retorna se ele existir na base de dados 
+void menu();														   // Função que possui a logica da aplicação
+void showEmployee();												   // Solicita um id de funcionário e retorna se ele existir na base de dados
 
 void menu()
 {
@@ -77,22 +77,30 @@ void menu()
 			break;
 		case 1:
 			system("clear");
-			int resp = 1;
-
+			int resp_user_employee_register = 1;
+			int function_resp = 0;
 			do
 			{
-				if (employee_register(getIdEmployee()) != 1)
-
 				{
-					printf("Falha ao tentar inserir usuário!");
+					function_resp = employee_register(getIdEmployee());
+					if (function_resp != 1 && function_resp != 0)
+
+					{
+						printf("Falha ao tentar inserir usuário!");
+					}
+
+					if (function_resp == 0)
+					{
+						break;
+					}
+					printf("Funcionário cadastrado com sucesso! \n");
+					printf("Digite 1 para cadastrar outro funcionário ou 2 para voltar ao menu: ");
+
+					scanf("%d", &resp_user_employee_register);
+					system("clear");
+						while (getchar() != '\n');
 				}
-
-				printf("Funcionário cadastrado com sucesso! \n");
-				printf("Digite 1 para cadastrar outro funcionário ou 2 para voltar ao menu: ");
-				scanf("%d", &resp);
-				system("clear");
-
-			} while ((resp == 1));
+			} while ((resp_user_employee_register == 1));
 			break;
 
 		case 2:
@@ -128,11 +136,12 @@ void menu()
 			break;
 		case 5:
 			system("clear");
-			int resp2 = 1;
+			int resp_user_employee_punch = 1;
 			do
 			{
 				int control = 1;
 				int id_employee_tmp;
+				int function_punch_resp = 0;
 				EMPLOYEE e;
 				printf("--------------------------------------------------------\n");
 				printf("|Sistema de controle de ponto (Cadastro de ponto)      | \n");
@@ -149,14 +158,25 @@ void menu()
 					printf("Funcionário de ID %d não encontrado. \n", id_employee_tmp);
 
 				} while (control == 1);
-				if (employee_punch(id_employee_tmp) != 1)
+				function_punch_resp = employee_punch(id_employee_tmp);
+
+				if (function_punch_resp != 1 && function_punch_resp != 0)
 				{
 					printf("Erro ao tentar cadastrar ponto! \n");
+					break;
 				}
+
+				if (function_punch_resp == 0)
+				{
+					break;
+				}
+
+				printf("Ponto registrado com sucesso!\n");
+
 				printf("Digite 1 para fazer outro lançamento de ponto ou 2 para voltar ao menu: ");
-				scanf("%d", &resp2);
+				scanf("%d", &resp_user_employee_punch);
 				system("clear");
-			} while ((resp2 == 1));
+			} while ((resp_user_employee_punch == 1));
 
 			break;
 		case 6:
@@ -178,7 +198,7 @@ int getIdEmployee()
 	if (!p)
 	{
 		printf("Arquivo de banco de dados não encontrato");
-		return;
+		return -1;
 	}
 
 	int max = 0;
@@ -204,7 +224,8 @@ EMPLOYEE getEmployee(int id)
 	p = fopen("funcionarios.csv", "rb");
 	if (!p)
 	{
-		return;
+		printf("Arquivo de base de dados não encontrado");
+		return e;
 	}
 	while (fread(&e, sizeof(EMPLOYEE), 1, p) == 1)
 	{
@@ -321,7 +342,7 @@ void employee_report(int id)
 		{
 			if (p.employee.id == id)
 			{
-				printf("%d/%d/%d         %d:%d              %c             %c\n", p.date.day, p.date.month, p.date.year, p.hour.hour, p.hour.minute, p.type, p.work_shift);
+				printf(" %02d/%02d/%d       %02d: %02d             %c            %c\n", p.date.day, p.date.month, p.date.year, p.hour.hour, p.hour.minute, p.type, p.work_shift);
 			}
 		}
 		fclose(f);
@@ -343,8 +364,11 @@ void employees_report()
 		printf("--------------------------------------------------------\n");
 		printf("|Sistema de controle de ponto (Listagem de pendências)  | \n");
 		printf("--------------------------------------------------------\n");
-		printf("? Tipo de registro: e = entrada s = saída\n");
-		printf("? Turno do registro: m = manhã t = tarde\n");
+		printf("Tipo de registro: e = entrada s = saída\n");
+		printf("Turno do registro: m = manhã t = tarde\n");
+		printf("Horários:\n");
+		printf("Manhã: 07:55 às 08:05 e 11:55 às 12:05\n");
+		printf("Tarde: 13:25 às 13:35 e 17:55 às 18:05\n");
 		printf("----------------------Pendências------------------------\n");
 
 		POINT p;
@@ -364,7 +388,7 @@ void employees_report()
 
 			if (hour_is_correct(p.hour.hour, p.hour.minute, p.type, p.work_shift) == -1)
 			{
-				printf(" %d/%d/%d    %d:%d      %c    	 %c       %s\n", p.date.day, p.date.month, p.date.year, p.hour.hour, p.hour.minute, p.type, p.work_shift, p.employee.name);
+				printf("%02d/%02d/%d    %02d:%02d     %c    	 %c       %s\n", p.date.day, p.date.month, p.date.year, p.hour.hour, p.hour.minute, p.type, p.work_shift, p.employee.name);
 				amount++;
 			}
 		}
@@ -416,7 +440,7 @@ int employee_punch(int id)
 	if (resposta != 's')
 	{
 		system("clear");
-		return;
+		return 0;
 	}
 
 	FILE *f;
@@ -432,6 +456,8 @@ int employee_punch(int id)
 	fwrite(&p, sizeof(POINT), 1, f);
 
 	fclose(f);
+
+	return 1;
 }
 int employee_register(int id)
 {
@@ -443,15 +469,16 @@ int employee_register(int id)
 	struct Employee e;
 	e.id = id;
 
+
 	printf("Digite o nome do funcionário: ");
 	fgets(e.name, 20, stdin);
 	e.name[strlen(e.name) - 1] = '\0';
 	printf("Digite o CPF do funcionário (###.###.###-##): ");
-	fgets(e.cpf, 16, stdin);
 	e.cpf[strlen(e.cpf) - 1] = '\0';
+	fgets(e.cpf, 16, stdin);
 	printf("Digite a data de admissão do funcionário (dd/mm/aaaa): ");
-	e.cpf[strlen(e.start_date) - 1] = '\0';
-	fgets(e.start_date, 20, stdin);
+	while (getchar() != '\n');
+
 
 	char resposta;
 	printf("Deseja cadastrar o funcionário? [s/n] ");
@@ -461,7 +488,7 @@ int employee_register(int id)
 	if (resposta != 's')
 	{
 		system("clear");
-		return;
+		return 0;
 	}
 
 	FILE *p;
@@ -475,7 +502,7 @@ int employee_register(int id)
 	fwrite(&e, sizeof(EMPLOYEE), 1, p);
 
 	fclose(p);
-
+	
 	return 1;
 }
 
