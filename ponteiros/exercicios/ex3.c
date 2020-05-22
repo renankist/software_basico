@@ -1,3 +1,4 @@
+ 
 /*
 03. Implemente um programa para usar e testar as duas funções criadas anteriormente. 
 Para isso, neste programa, crie duas variáveis inteiras: x=1 e y=100. Depois imprimir o conteúdo dos 
