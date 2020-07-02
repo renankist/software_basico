@@ -35,8 +35,7 @@ int main()
             getchar();
             if(i != 0){
                 p->pai = &v[i - 1]; // recebe o endereço do ponteiro incicial 
-            }
-            
+            } 
             p++;
         }
     }

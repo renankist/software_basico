@@ -27,7 +27,7 @@ int main()
         scanf("%d", &p->idade);
     }
 
-    printf("Nome da pessoa = %s \n", p->nome);
+    printf("Nome da pessoa = %s", p->nome);
     printf("idade da pessoa = %d ", p->idade);
 
     return 0;
