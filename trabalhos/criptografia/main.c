@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
 #define TAMANHO_MSG 20
-#define TAMANHO_SENHA 12
+#define TAMANHO_SENHA 20
 #define TAMANHO_NOME_ARQUIVO 12
 
 struct Historico
@@ -9,7 +12,7 @@ struct Historico
     char operacao;
     char nome_arquivo[TAMANHO_NOME_ARQUIVO];
     char mensagem[TAMANHO_MSG];
-    char senha[6];
+    char senha[TAMANHO_SENHA];
 };
 typedef struct Historico HISTORICO;
 
@@ -20,7 +23,144 @@ struct Mensagem
 };
 typedef struct Mensagem MENSAGEM;
 
-//Funções auxiliares:
+int conta_char(char str[])
+{
+    int i = 0;
+
+    while (str[i] != '\0')
+    {
+
+        i++;
+    }
+    return i;
+}
+int descriptografa(char *mensagem_cript, char *senha, char *mensagem_descrip)
+{
+    int indice_senha = conta_char(senha) - 1;
+    int checksum = 0;
+    int i = 0;
+    int tam_mensagem = conta_char(mensagem_cript);
+    int senha_menor_que_mensagem = 0;
+
+    for (i = 0; i < tam_mensagem; i++)
+    {
+        if (senha_menor_que_mensagem == 0)
+        {
+            mensagem_descrip[i] = mensagem_cript[i] ^ senha[indice_senha];
+        }
+        else
+        {
+            mensagem_descrip[i] = mensagem_cript[i] ^ (senha[indice_senha] + 1);
+        }
+
+        if (indice_senha == 0)
+        {
+            indice_senha = conta_char(senha) - 1;
+            senha_menor_que_mensagem = 1;
+        }
+        else
+        {
+            indice_senha--;
+        }
+        checksum += mensagem_descrip[i];
+    }
+    mensagem_descrip[tam_mensagem] = '\0';
+
+    return checksum;
+}
+
+int criptografa(char *mensagem, char *senha, char *mensagem_cript)
+{
+    int indice_senha = conta_char(senha) - 1;
+    int checksum = 0;
+    int i;
+    int tam_mensagem = conta_char(mensagem);
+    int senha_menor_que_mensagem = 0;
+
+    for (i = 0; i < tam_mensagem; i++)
+    {
+        if (senha_menor_que_mensagem == 0)
+        {
+            mensagem_cript[i] = mensagem[i] ^ senha[indice_senha];
+        }
+        else
+        {
+            mensagem_cript[i] = mensagem[i] ^ (senha[indice_senha] + 1);
+        }
+
+        if (indice_senha == 0)
+        {
+            indice_senha = conta_char(senha) - 1;
+            senha_menor_que_mensagem = 1;
+        }
+        else
+        {
+            indice_senha--;
+        }
+
+        checksum += mensagem[i];
+    }
+
+    mensagem_cript[tam_mensagem] = '\0';
+
+    return checksum;
+}
+
+void gera_senha(char *senha_aleatoria)
+{
+    char key_lchar[52] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+
+    int quant = 1;
+    int n = 0;
+
+    srand(time(NULL));
+
+    for (n = 0; n <= quant; n++)
+    {
+        senha_aleatoria[n] = key_lchar[rand() % 57];
+    }
+
+}
+
+void quebrar_senha()
+{
+
+    printf("----------------------------------------------------\n");
+    printf("|     CriptoSystem (Quebrar senha)                 | \n");
+    printf("----------------------------------------------------\n");
+
+    int retorno = 0;
+    int checksum = 1;
+    MENSAGEM m;
+
+    char senha[TAMANHO_SENHA];
+    char nome_arquivo[TAMANHO_NOME_ARQUIVO];
+    char msg_descriptografada[TAMANHO_MSG];
+    char msg_criptografada[TAMANHO_MSG];
+    int checksum_msg_original;
+
+    printf("Digite o nome do arquivo que contem a mensagem a ser quebrada: ");
+    fgets(nome_arquivo, TAMANHO_NOME_ARQUIVO, stdin);
+
+    //Abrir arquivo e ler mensagem
+    FILE *f;
+    f = fopen(nome_arquivo, "rb");
+    if (!f)
+    {
+        printf("Arquivo de banco de dados não encontrato");
+    }
+    while (fread(&m, sizeof(MENSAGEM), 1, f) == 1)
+    {
+        strcpy(msg_criptografada, m.msg_criptografada);
+        checksum_msg_original = m.checksum;
+    }
+
+    fclose(f);
+
+    printf("Mensagem original %d: ", checksum_msg_original);
+
+  
+}
 
 int mostra_historico()
 {
@@ -40,16 +180,16 @@ int mostra_historico()
         return 0;
     }
     int amount = 0;
-    printf(" Operação (c/d) |      Arquivo      |          Mensagem           |     Senha \n");
     while (fread(&h, sizeof(HISTORICO), 1, f) == 1)
     {
-        printf(" %c                %s         %s  %s \n", h.operacao, h.nome_arquivo, h.mensagem, h.senha);
+        printf("Operação: %c\n", h.operacao);
+        printf("Nome arquivo: %s", h.nome_arquivo);
+        printf("Mensagem: %s", h.mensagem);
+        printf("Senha: %s\n", h.senha);
+        printf("----------------------------------------------------\n");
         amount++;
     }
     fclose(f);
-
-    printf("--------------------------------------------------------\n");
-    printf("Quantidade de operações: %d\n\n", amount);
 }
 
 int salva_historico(HISTORICO hist)
@@ -72,17 +212,6 @@ int salva_historico(HISTORICO hist)
     return 1;
 }
 
-int conta_char(char str[])
-{
-    int i = 0;
-    do
-    {
-        ++i;
-    } while (str[i] != '\0');
-    return i;
-}
-//-------------------
-
 int gera_arquivo_binario(MENSAGEM m, char arquivo[TAMANHO_NOME_ARQUIVO])
 {
     FILE *p;
@@ -102,89 +231,74 @@ int gera_arquivo_binario(MENSAGEM m, char arquivo[TAMANHO_NOME_ARQUIVO])
     return 1;
 }
 
-int descriptografar()
+int menu_descriptografar()
 {
     printf("----------------------------------------------------\n");
     printf("|     CriptoSystem (Descriptografar mensagem)      | \n");
     printf("----------------------------------------------------\n");
 
     int retorno = 0;
-
+    int checksum = 0;
     MENSAGEM m;
     HISTORICO h;
 
     char senha[TAMANHO_SENHA];
     char nome_arquivo[TAMANHO_NOME_ARQUIVO];
     char msg_descriptografada[TAMANHO_MSG];
+    char msg_criptografada[TAMANHO_MSG];
+    int checksum_msg_original;
 
-    printf("Digite o nome do arquivo de origem:");
+    printf("Digite o nome do arquivo de origem: ");
     fgets(nome_arquivo, TAMANHO_NOME_ARQUIVO, stdin);
 
-    printf("Digite a senha para descriptografar a mensagem:");
+    printf("Digite a senha para descriptografar a mensagem: ");
     fgets(senha, TAMANHO_SENHA, stdin);
-   // strcpy(senha, "admin");
-    //Ler arquivo para tentar descriptografar
-    FILE *p;
-    p = fopen(nome_arquivo, "rb");
+    senha[strlen(senha) - 1] = '\0';
 
-    if (!p)
+    //Abrir arquivo e ler mensagem
+    FILE *f;
+    f = fopen(nome_arquivo, "rb");
+
+    if (!f)
     {
-        printf("Arquivo não encontrato");
-        retorno = -1;
+        printf("Arquivo de banco de dados não encontrato");
+        return 0;
+    }
+
+    while (fread(&m, sizeof(MENSAGEM), 1, f) == 1)
+    {
+        strcpy(msg_criptografada, m.msg_criptografada);
+        checksum_msg_original = m.checksum;
+    }
+
+    fclose(f);
+
+    checksum = descriptografa(msg_criptografada, senha, msg_descriptografada);
+
+    checksum = checksum - checksum_msg_original;
+
+    if (checksum == 0)
+    {
+        printf("Mensagem descriptografada: %s\n", msg_descriptografada);
+        //Salva historico
+        strcpy(h.mensagem, msg_descriptografada);
+        strcpy(h.nome_arquivo, nome_arquivo);
+        strcpy(h.senha, senha);
+        h.operacao = 'd';
+        salva_historico(h);
+
+        retorno = 1;
     }
     else
     {
-        int checksum;
-        while (fread(&m, sizeof(MENSAGEM), 1, p) == 1)
-        {
-            //Descriptografar mensagem
-            int indice_senha = 0; //Cria um índice da senha para caso dela ser menor que a mensagem
-            int i;
-
-            for (i = 0; m.msg_criptografada[i] != '\0'; i++)
-            {
-                msg_descriptografada[i] =  m.msg_criptografada[i] ^ (senha[indice_senha]) ;
-
-                if (indice_senha == conta_char(senha) - 1)
-                {
-                    indice_senha = 0;
-                }
-                else
-                {
-                    indice_senha++;
-                }
-
-                checksum = checksum + m.msg_criptografada[i];
-            }
-            printf("Mensagem descriptografada: %s\n", msg_descriptografada);
-            printf("Checksum descript: %d\n", checksum);
-            //checksum = m.checksum - checksum;
-        }
-
-        if (checksum == 0)
-        {
-            printf("Mensagem descriptografa:%s\n", msg_descriptografada);
-            //Salva historico
-            strcpy(h.mensagem, msg_descriptografada);
-            strcpy(h.nome_arquivo, nome_arquivo);
-            strcpy(h.senha, senha);
-            h.operacao = 'd';
-            salva_historico(h);
-
-            retorno = 1;
-        }
-        else
-        {
-            printf("Erro! Checksum = %d\n", checksum);
-            printf("Senha: %s%d\n", senha, conta_char(senha));
-            retorno = checksum;
-        }
+        printf("Erro! Checksum = %d\n", checksum);
+        retorno = checksum;
     }
 
     return retorno;
 }
 
-int criptografar()
+int menu_criptografar()
 {
     printf("----------------------------------------------------\n");
     printf("|     CriptoSystem (Criptografar mensagem)          | \n");
@@ -194,43 +308,23 @@ int criptografar()
 
     MENSAGEM m;
     HISTORICO h;
+
     char senha[TAMANHO_SENHA];
     char nome_arquivo_destino[TAMANHO_NOME_ARQUIVO];
     char msg_original[TAMANHO_MSG];
 
     printf("Digite a mensagem a ser criptografada: ");
     fgets(msg_original, TAMANHO_MSG, stdin);
-    //strcpy(msg_original, "admin");
 
     printf("Digite a senha usada para criptografar a mensagem: ");
+
     fgets(senha, TAMANHO_SENHA, stdin);
-    //strcpy(senha, "admin");
+    senha[strlen(senha) - 1] = '\0';
 
     printf("Digite o nome do arquivo de destino para a mensagem criptografada: ");
     fgets(nome_arquivo_destino, TAMANHO_NOME_ARQUIVO, stdin);
 
-    //Criptografando mensagem
-    int indice_senha = 0; //Cria um índice da senha para caso dela ser menor que a mensagem
-    int i;
-
-    for (i = 0; msg_original[i] != '\0'; i++)
-    {
-        m.msg_criptografada[i] = msg_original[i] ^ (senha[indice_senha]);
-        if (indice_senha == conta_char(senha) - 1)
-        {
-            indice_senha = 0;
-        }
-        else
-        {
-            indice_senha++;
-        }
-
-        m.checksum = m.checksum + msg_original[i];
-
-    
-    }
-
-    printf("Checksum criptografia:  %d", *msg_original);
+    m.checksum = criptografa(msg_original, senha, m.msg_criptografada);
 
     retorno = gera_arquivo_binario(m, nome_arquivo_destino);
 
@@ -300,7 +394,7 @@ int main(int args, char *argv[])
             break;
         case 1:
             system("clear");
-            if (criptografar() == 1)
+            if (menu_criptografar() == 1)
             {
                 printf("Mensagem criptografada e salva em um arquivo com sucesso!\n");
                 option = -1;
@@ -313,7 +407,7 @@ int main(int args, char *argv[])
             break;
         case 2:
             system("clear");
-            if (descriptografar() == 1)
+            if (menu_descriptografar() == 1)
             {
                 printf("Sucesso!\n");
                 option = -1;
@@ -325,7 +419,9 @@ int main(int args, char *argv[])
             }
             break;
         case 3:
-
+            system("clear");
+            quebrar_senha();
+            option = -1;
             break;
         case 4:
             system("clear");
